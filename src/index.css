@@ -1,0 +1,22 @@
+@import "tailwindcss";
+
+@keyframes spin-platter {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-normal {
+  animation: spin-platter 4s linear infinite;
+}
+
+.animate-spin-fast {
+  animation: spin-platter 1.5s linear infinite;
+}
+
+.animate-spin-slow {
+  animation: spin-platter 7s linear infinite;
+}

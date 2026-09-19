@@ -1,0 +1,6 @@
+{
+  "name": "Disk Scheduling Algorithm Calculator",
+  "description": "An interactive Operating Systems learning tool to analyze, calculate, and visualize disk scheduling algorithms including FCFS, SSTF, SCAN, C-SCAN, LOOK, and C-LOOK.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
