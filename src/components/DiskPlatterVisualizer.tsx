@@ -52,7 +52,7 @@ export const DiskPlatterVisualizer: React.FC<DiskPlatterVisualizerProps> = ({
     rpmSpeed === 'fast' ? 'animate-spin-fast' : rpmSpeed === 'slow' ? 'animate-spin-slow' : 'animate-spin-normal';
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm space-y-5">
+    <div id="platter-simulator" className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm space-y-5 scroll-mt-20">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800/80 pb-4">
         <div>

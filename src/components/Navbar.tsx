@@ -12,9 +12,9 @@ export const Navbar = ({ darkMode, onToggleTheme, onOpenHistory, historyCount }:
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navLinks = [
-    { name: 'Home', href: '#home' },
     { name: 'Calculator', href: '#calculator' },
-    { name: 'Visualization', href: '#visualization' },
+    { name: 'Platter Simulator', href: '#platter-simulator' },
+    { name: 'Trajectory Plot', href: '#visualization' },
     { name: 'Comparison', href: '#comparison' },
     { name: 'Algorithms', href: '#algorithms' },
     { name: 'About', href: '#about' },
@@ -33,9 +33,9 @@ export const Navbar = ({ darkMode, onToggleTheme, onOpenHistory, historyCount }:
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Brand */}
-          <a
-            href="#home"
-            className="flex items-center gap-2.5 text-slate-900 dark:text-white font-bold tracking-tight hover:opacity-90 transition-opacity"
+          <button
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            className="flex items-center gap-2.5 text-slate-900 dark:text-white font-bold tracking-tight hover:opacity-90 transition-opacity cursor-pointer text-left"
             id="brand-logo"
           >
             <div className="p-2 rounded-xl bg-indigo-600 text-white shadow-md shadow-indigo-600/20 flex items-center justify-center">
@@ -49,7 +49,7 @@ export const Navbar = ({ darkMode, onToggleTheme, onOpenHistory, historyCount }:
                 Algorithm Calculator
               </span>
             </div>
-          </a>
+          </button>
 
           {/* Desktop Nav Links */}
           <nav className="hidden md:flex items-center gap-1">

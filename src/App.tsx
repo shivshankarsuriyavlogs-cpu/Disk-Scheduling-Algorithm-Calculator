@@ -3,7 +3,6 @@ import confetti from 'canvas-confetti';
 import { AlgorithmType, Direction, CalculationResult, ComparisonItem, HistoryEntry } from './types';
 import { validateInput, calculateAlgorithm, compareAlgorithms } from './utils/algorithms';
 import { Navbar } from './components/Navbar';
-import { Hero } from './components/Hero';
 import { CalculatorForm } from './components/CalculatorForm';
 import { MetricsCards } from './components/MetricsCards';
 import { MovementSequence } from './components/MovementSequence';
@@ -18,6 +17,31 @@ import { HistoryDrawer } from './components/HistoryDrawer';
 
 const STORAGE_KEY_THEME = 'disk_calc_theme';
 const STORAGE_KEY_HISTORY = 'disk_calc_history';
+
+// Standard textbook presets
+export const PRESETS = [
+  {
+    name: 'Silberschatz (Standard OS)',
+    queue: '98, 183, 37, 122, 14, 124, 65, 67',
+    head: '53',
+    diskSize: '200',
+    direction: 'Right' as Direction,
+  },
+  {
+    name: 'Tanenbaum (Modern OS)',
+    queue: '1, 36, 16, 34, 9, 12',
+    head: '11',
+    diskSize: '40',
+    direction: 'Right' as Direction,
+  },
+  {
+    name: 'Stallings (OS Principles)',
+    queue: '55, 58, 39, 18, 90, 160, 150, 38, 184',
+    head: '100',
+    diskSize: '200',
+    direction: 'Right' as Direction,
+  },
+];
 
 export default function App() {
   // Theme state
@@ -47,9 +71,14 @@ export default function App() {
   const [direction, setDirection] = useState<Direction>('Right');
   const [selectedAlgorithm, setSelectedAlgorithm] = useState<AlgorithmType>('FCFS');
 
-  // Calculation Results
-  const [currentResult, setCurrentResult] = useState<CalculationResult | null>(null);
-  const [comparisonItems, setComparisonItems] = useState<ComparisonItem[]>([]);
+  // Pre-calculate initial results immediately on mount so the user sees a 100% active, working dashboard
+  const [currentResult, setCurrentResult] = useState<CalculationResult>(() => {
+    return calculateAlgorithm('FCFS', 53, [98, 183, 37, 122, 14, 124, 65, 67], 200, 'Right');
+  });
+
+  const [comparisonItems, setComparisonItems] = useState<ComparisonItem[]>(() => {
+    return compareAlgorithms(53, [98, 183, 37, 122, 14, 124, 65, 67], 200, 'Right');
+  });
 
   // Interactive Playback State
   const [activeStep, setActiveStep] = useState<number>(-1); // -1 = overview
@@ -123,7 +152,7 @@ export default function App() {
     return () => clearInterval(timer);
   }, [isPlaying, playbackSpeed, currentResult]);
 
-  // Execution function (triggered by Calculate button)
+  // Execution function (triggered by Calculate button or preset clicks)
   const runCalculation = useCallback((triggerConfetti = false) => {
     const valid = validateInput(queueInput, headInput, diskSizeInput, selectedAlgorithm, direction);
     if (!valid.isValid || !valid.parsedQueue || valid.parsedHead === undefined || !valid.parsedDiskSize) {
@@ -163,18 +192,21 @@ export default function App() {
       averageSeekDistance: result.averageSeekDistance,
     };
 
-    setHistory((prev) => [historyItem, ...prev.filter(h => !(h.algorithm === historyItem.algorithm && h.initialHead === historyItem.initialHead && h.requestQueue.join(',') === historyItem.requestQueue.join(',')))].slice(0, 30));
+    setHistory((prev) => [
+      historyItem,
+      ...prev.filter(h => !(h.algorithm === historyItem.algorithm && h.initialHead === historyItem.initialHead && h.requestQueue.join(',') === historyItem.requestQueue.join(',')))
+    ].slice(0, 30));
 
     if (triggerConfetti) {
       try {
         confetti({
-          particleCount: 40,
-          spread: 70,
-          origin: { y: 0.65 },
+          particleCount: 35,
+          spread: 60,
+          origin: { y: 0.6 },
           colors: ['#4f46e5', '#0284c7', '#10b981', '#f59e0b']
         });
       } catch {
-        // ignore confetti errors in iframe
+        // ignore in iframe
       }
 
       // Smooth scroll to results
@@ -207,12 +239,12 @@ export default function App() {
     setSelectedAlgorithm(algo);
   };
 
-  // Load standard example dataset
-  const handleLoadExample = () => {
-    setQueueInput('98, 183, 37, 122, 14, 124, 65, 67');
-    setHeadInput('53');
-    setDiskSizeInput('200');
-    setDirection('Right');
+  // Load preset dataset
+  const handleApplyPreset = (preset: typeof PRESETS[0]) => {
+    setQueueInput(preset.queue);
+    setHeadInput(preset.head);
+    setDiskSizeInput(preset.diskSize);
+    setDirection(preset.direction);
   };
 
   // Generate random realistic dataset
@@ -263,15 +295,39 @@ export default function App() {
         historyCount={history.length}
       />
 
-      {/* Main Content Sections */}
-      <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 space-y-12 pb-16">
-        {/* Hero Section */}
-        <Hero
-          onStartCalculating={() => scrollToSection('#calculator')}
-          onExploreAlgorithms={() => scrollToSection('#algorithms')}
-        />
+      {/* Main Content: Direct, instant working application view */}
+      <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-6 pb-16 space-y-8">
+        {/* Compact Utility Header with Live Status & Presets */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+              <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+                Disk Scheduling Algorithm Calculator
+              </h1>
+            </div>
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
+              Interactive simulator for FCFS, SSTF, SCAN, C-SCAN, LOOK & C-LOOK with mechanical platter visualization.
+            </p>
+          </div>
 
-        {/* Calculator Configuration Form */}
+          {/* Quick textbook dataset switchers */}
+          <div className="flex flex-wrap items-center gap-1.5 self-start md:self-auto">
+            <span className="text-xs font-semibold text-slate-400 mr-1 hidden sm:inline">Presets:</span>
+            {PRESETS.map((p) => (
+              <button
+                key={p.name}
+                type="button"
+                onClick={() => handleApplyPreset(p)}
+                className="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-slate-100 dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-indigo-950/60 text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer"
+              >
+                {p.name.split(' ')[0]}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* 1. Calculator Configuration Form */}
         <CalculatorForm
           queueInput={queueInput}
           headInput={headInput}
@@ -286,14 +342,14 @@ export default function App() {
           onAlgorithmChange={handleAlgorithmChange}
           onCalculate={() => runCalculation(true)}
           onReset={handleReset}
-          onLoadExample={handleLoadExample}
+          onLoadExample={() => handleApplyPreset(PRESETS[0])}
           onGenerateRandom={handleGenerateRandom}
         />
 
-        {/* Dynamic Calculation Results Display */}
+        {/* 2. Dynamic Calculation Results Display (Always live and visible) */}
         {currentResult && (
-          <div id="results-section" className="space-y-8 animate-fadeIn scroll-mt-20">
-            {/* Top Metrics Cards & Mathematical Formula Breakdown */}
+          <div id="results-section" className="space-y-8 scroll-mt-20">
+            {/* Top Key Metrics Cards & Mathematical Formula Expansion */}
             <MetricsCards result={currentResult} />
 
             {/* Interactive Mechanical Disk Platter & Actuator Arm Simulator */}
@@ -305,7 +361,7 @@ export default function App() {
               onTogglePlay={handleTogglePlay}
             />
 
-            {/* Horizontal Movement Sequence (Gantt-style) with Step Playback */}
+            {/* Horizontal Head Movement Sequence (Gantt-style) with Step Playback */}
             <MovementSequence
               result={currentResult}
               activeStep={activeStep}
@@ -332,7 +388,7 @@ export default function App() {
           </div>
         )}
 
-        {/* Algorithm Comparison (runs all 6 algorithms concurrently on the same queue) */}
+        {/* 3. Algorithm Comparison (runs all 6 algorithms concurrently on the same queue) */}
         {comparisonItems.length > 0 && currentResult && (
           <AlgorithmComparison
             comparisonItems={comparisonItems}
@@ -346,13 +402,13 @@ export default function App() {
           />
         )}
 
-        {/* Algorithm Information Cards (Educational knowledge base for all 6) */}
+        {/* 4. Algorithm Information Knowledge Base */}
         <AlgorithmCards onSelectAlgorithm={(algo) => {
           handleAlgorithmChange(algo);
           scrollToSection('#calculator');
         }} />
 
-        {/* About Section */}
+        {/* 5. About & Educational Reference */}
         <AboutSection />
       </main>
 
