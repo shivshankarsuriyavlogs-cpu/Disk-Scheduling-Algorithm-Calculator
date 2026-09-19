@@ -8,7 +8,7 @@ export default defineConfig(() => {
     // GitHub Pages serves this project from /Disk-Scheduling-Algorithm-Calculator/.
     // Without this base path, built JS/CSS assets are requested from the domain root
     // and the deployed app appears as a blank page.
-    base: '/Disk-Scheduling-Algorithm-Calculator/',
+    base: './',
     plugins: [react(), tailwindcss()],
     resolve: {
       alias: {
